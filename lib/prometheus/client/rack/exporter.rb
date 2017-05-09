@@ -62,10 +62,15 @@ module Prometheus
         end
 
         def respond_with(format)
+          if ENV.has_key?('prometheus_multiproc_dir')
+            response = format.marshal_multiprocess(@registry)
+          else
+            response = format.marshal(@registry)
+          end
           [
             200,
             { 'Content-Type' => format::CONTENT_TYPE },
-            [format.marshal(@registry)],
+            [response],
           ]
         end
 
