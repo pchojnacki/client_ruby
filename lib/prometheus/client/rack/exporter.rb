@@ -63,7 +63,7 @@ module Prometheus
 
         def respond_with(format)
           if ENV.has_key?('prometheus_multiproc_dir')
-            response = format.marshal_multiprocess(@registry)
+            response = format.marshal_multiprocess
           else
             response = format.marshal(@registry)
           end
