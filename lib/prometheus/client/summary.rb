@@ -25,9 +25,6 @@ module Prometheus
       end
 
       def initialize(name, docstring, base_labels = {}, multiprocess_mode)
-        if ENV['prometheus_multiproc_dir']
-          raise ArgumentError, "Summary metric type does not have multiprocess support"
-        end
         super(name, docstring, base_labels)
       end
 
