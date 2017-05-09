@@ -53,7 +53,7 @@ module Prometheus
       def values
         synchronize do
           @values.each_with_object({}) do |(labels, value), memo|
-            memo[labels] = Value.new(value)
+            memo[labels] = value
           end
         end
       end
@@ -61,7 +61,7 @@ module Prometheus
       private
 
       def default(labels)
-        Quantile::Estimator.new
+        Value.new(type, @name, labels, Quantile::Estimator.new)
       end
     end
   end
