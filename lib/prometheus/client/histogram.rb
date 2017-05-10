@@ -18,7 +18,7 @@ module Prometheus
           @total = ValueClass.new(type, name, "#{name}_count", labels)
 
           buckets.each do |bucket|
-            self[bucket] = ValueClass.new(type, name, "#{name}_bucket", labels.merge({'le' => bucket.to_s}))
+            self[bucket] = ValueClass.new(type, name, "#{name}_bucket", labels.merge({:le => bucket.to_s}))
           end
         end
 
