@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'quantile'
 require 'prometheus/client/metric'
 
 module Prometheus
@@ -14,17 +13,13 @@ module Prometheus
       class Value < Hash
         attr_accessor :sum, :total
 
-        def initialize(name, labels, estimator)
-          @sum = ValueClass.new(name, name + '_sum', labels, estimator.sum)
-          @total = ValueClass.new(name, name + '_count', labels, estimator.observations)
-
-          estimator.invariants.each do |invariant|
-            self[invariant.quantile] = ValueClass.new(type, name, labels, estimator.query(invariant.quantile), nil)
-          end
+        def initialize(type, name, labels)
+          @sum = ValueClass.new(type, name, name + '_sum', labels)
+          @total = ValueClass.new(type, name, name + '_count', labels)
         end
       end
 
-      def initialize(name, docstring, base_labels = {}, multiprocess_mode)
+      def initialize(name, docstring, base_labels = {})
         super(name, docstring, base_labels)
       end
 
@@ -35,7 +30,10 @@ module Prometheus
       # Records a given value.
       def observe(labels, value)
         label_set = label_set_for(labels)
-        synchronize { @values[label_set].observe(value) }
+        synchronize do
+          @sum[label_set].increment(1)
+          @total[label_set].increment(value)
+        end
       end
       alias add observe
       deprecate :add, :observe, 2016, 10
@@ -61,7 +59,7 @@ module Prometheus
       private
 
       def default(labels)
-        Value.new(type, @name, labels, Quantile::Estimator.new)
+        Value.new(type, @name, labels)
       end
     end
   end
