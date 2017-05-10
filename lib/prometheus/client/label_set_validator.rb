@@ -61,7 +61,7 @@ module Prometheus
       end
 
       def validate_reserved_key(key)
-        return true unless reserved_labels.include?(key)
+        return true unless @reserved_labels.include?(key)
 
         raise ReservedLabelError, "#{key} is reserved"
       end
