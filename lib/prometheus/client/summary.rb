@@ -19,7 +19,7 @@ module Prometheus
           @total = ValueClass.new(type, name, "#{name}_count", labels)
           @estimator = Quantile::Estimator.new
           @estimator.invariants.each do |invariant|
-            self[invariant.quantile] = ValueClass.new(type, name, "#{name}_summary", labels.merge({:quantile => invariant.quantile})
+            self[invariant.quantile] = ValueClass.new(type, name, "#{name}_summary", labels.merge({:quantile => invariant.quantile}))
           end
         end
 
