@@ -13,7 +13,8 @@ module Prometheus
       class InvalidLabelError < LabelSetError; end
       class ReservedLabelError < LabelSetError; end
 
-      def initialize
+      def initialize(reserved_labels = [])
+        @reserved_labels = (reserved_labels + RESERVED_LABELS).freeze
         @validated = {}
       end
 
@@ -60,7 +61,7 @@ module Prometheus
       end
 
       def validate_reserved_key(key)
-        return true unless RESERVED_LABELS.include?(key)
+        return true unless reserved_labels.include?(key)
 
         raise ReservedLabelError, "#{key} is reserved"
       end

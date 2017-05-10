@@ -12,7 +12,14 @@ module Prometheus
 
       def initialize(name, docstring, base_labels = {})
         @mutex = Mutex.new
-        @validator = LabelSetValidator.new
+        case type
+        when :summary
+          @validator = LabelSetValidator.new(['quantile'])
+        when :histogram
+          @validator = LabelSetValidator.new(['le'])
+        else
+          @validator = LabelSetValidator.new
+        end
         @values = Hash.new { |hash, key| hash[key] = default(key) }
 
         validate_name(name)
