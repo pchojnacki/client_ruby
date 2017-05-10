@@ -76,6 +76,7 @@ module Prometheus
         def record(labels, duration)
           @requests.increment(labels)
           @durations.observe(labels, duration)
+          @durations_hist.observe(labels, duration)
         rescue => exception
           @exceptions.increment(exception: exception.class.name)
           raise
