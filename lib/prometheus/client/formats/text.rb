@@ -85,37 +85,11 @@ module Prometheus
                 else # all/liveall
                   samples[[name, labels]] = value
                 end
-              when :histogram
-                bucket = labels.select{|l| l[0] == 'le' }.map {|k, v| v.to_f}.first
-                if bucket
-                  without_le = labels.select{ |l| l[0] != 'le' }
-                  b = buckets.fetch(without_le, {})
-                  v = b.fetch(bucket, 0.0) + value
-                  if !buckets.has_key?(without_le)
-                    buckets[without_le] = {}
-                  end
-                  buckets[without_le][bucket] = v
-                else
-                  s = samples.fetch([name, labels], 0.0)
-                  samples[[name, labels]] = s + value
-                end
               else
-                # Counter and Summary.
+                # Counter, Histogram and Summary.
                 without_pid = labels.select{ |l| l[0] != 'pid' }
                 s = samples.fetch([name, without_pid], 0.0)
                 samples[[name, without_pid]] = s + value
-              end
-
-              if metric[:type] == :histogram
-                buckets.each do |labels, values|
-                  acc = 0.0
-                  values.sort.each do |bucket, value|
-                    acc += value
-                    # TODO: handle Infinity
-                    samples[[metric[:metric_name] + '_bucket', labels + [['le', bucket.to_s]]]] = acc
-                  end
-                  samples[[metric[:metric_name] + '_count', labels]] = acc
-                end
               end
 
               metric[:samples] = samples.map do |name_labels, value|
