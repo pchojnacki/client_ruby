@@ -41,6 +41,10 @@ module Prometheus
           )
           @durations = @registry.summary(
             :http_request_duration_seconds,
+            'A summary of the response latency.',
+          )
+          @durations_hist = @registry.histogram(
+            :http_req_duration_seconds,
             'A histogram of the response latency.',
           )
         end
@@ -72,8 +76,9 @@ module Prometheus
         def record(labels, duration)
           @requests.increment(labels)
           @durations.observe(labels, duration)
-        rescue
-          # TODO: log unexpected exception during request recording
+        rescue => exception
+          @exceptions.increment(exception: exception.class.name)
+          raise
           nil
         end
       end
