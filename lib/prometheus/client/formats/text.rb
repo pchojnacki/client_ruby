@@ -101,6 +101,7 @@ module Prometheus
                 end
               else
                 # Counter and Summary.
+                without_pid = labels.select{ |l| l[0] != 'pid' }
                 s = samples.fetch([name, without_pid], 0.0)
                 samples[[name, without_pid]] = s + value
               end
