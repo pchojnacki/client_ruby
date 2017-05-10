@@ -32,7 +32,7 @@ module Prometheus
           #       Alternatively it could be done in the exporter.
           @estimator.observe(value)
           @estimator.invariants.each do |invariant|
-            self[invariant.quantile].set(estimator.query(invariant.quantile))
+            self[invariant.quantile].set(@estimator.query(invariant.quantile))
           end
         end
       end
