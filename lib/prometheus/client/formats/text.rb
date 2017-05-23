@@ -38,7 +38,7 @@ module Prometheus
           (lines << nil).join(DELIMITER)
         end
 
-        def self.marshal_multiprocess(path=ENV['prometheus_multiproc_dir'])
+        def self.marshal_multiprocess(path=Prometheus::Client::Multiprocdir)
           metrics = {}
           Dir.glob(File.join(path, "*.db")).each do |f|
             parts = File.basename(f).split("_")

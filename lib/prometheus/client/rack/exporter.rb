@@ -62,11 +62,8 @@ module Prometheus
         end
 
         def respond_with(format)
-          if ENV.has_key?('prometheus_multiproc_dir')
-            response = format.marshal_multiprocess
-          else
-            response = format.marshal(@registry)
-          end
+          # For now we're only supporting mmapped ValueClass.
+          response = format.marshal_multiprocess
           [
             200,
             { 'Content-Type' => format::CONTENT_TYPE },

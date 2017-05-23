@@ -42,7 +42,7 @@ module Prometheus
 
         @@files_lock.synchronize do
           if !@@files.has_key?(file_prefix)
-            filename = File.join(ENV['prometheus_multiproc_dir'], "#{file_prefix}_#{@@pid}.db")
+            filename = File.join(Prometheus::Client::Multiprocdir, "#{file_prefix}_#{@@pid}.db")
             @@files[file_prefix] = MmapedDict.new(filename)
           end
         end
@@ -90,9 +90,12 @@ module Prometheus
     # and as that may be in some arbitrary library the user/admin has
     # no control over we use an enviroment variable.
     if ENV.has_key?('prometheus_multiproc_dir')
+      Multiprocdir = ENV['prometheus_multiproc_dir']
       ValueClass = MmapedValue
     else
-      ValueClass = SimpleValue
+      # Only support mmap values for now.
+      Multiprocdir = '/var/run/gitlab/unicorn'
+      ValueClass = MmapedValue
     end
   end
 end

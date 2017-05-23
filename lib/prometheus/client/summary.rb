@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'quantile'
 require 'prometheus/client/metric'
 
 module Prometheus
@@ -17,23 +16,11 @@ module Prometheus
         def initialize(type, name, labels)
           @sum = ValueClass.new(type, name, "#{name}_sum", labels)
           @total = ValueClass.new(type, name, "#{name}_count", labels)
-          @estimator = Quantile::Estimator.new
-          @estimator.invariants.each do |invariant|
-            self[invariant.quantile] = ValueClass.new(type, name, "#{name}_summary", labels.merge({:quantile => invariant.quantile}))
-          end
         end
 
         def observe(value)
           @sum.increment(value)
           @total.increment()
-          # TODO: The quantile info is innaccurate as it only contains
-          #       observations per-process.  What needs to happen is for
-          #       observations to be read into the estimator and then reported.
-          #       Alternatively it could be done in the exporter.
-          @estimator.observe(value)
-          @estimator.invariants.each do |invariant|
-            self[invariant.quantile].set(@estimator.query(invariant.quantile))
-          end
         end
       end
 
