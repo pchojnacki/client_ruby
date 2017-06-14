@@ -41,7 +41,7 @@ module Prometheus
         def self.marshal_multiprocess(path=Prometheus::Client::Multiprocdir)
           metrics = {}
           Dir.glob(File.join(path, "*.db")).each do |f|
-            parts = File.basename(f).split("_")
+            parts = File.basename(f,'.db').split("_")
             type = parts[0].to_sym
             d = MmapedDict.new(f)
             d.all_values.each do |key, value|
@@ -53,7 +53,7 @@ module Prometheus
                 samples: [],
               })
               if type == :gauge
-                pid = parts[2][0..-3]
+                pid = parts[2]
                 metric[:multiprocess_mode] = parts[1]
                 metric[:samples] += [[name, labelnames.zip(labelvalues) + [['pid', pid]], value]]
               else
