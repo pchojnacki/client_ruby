@@ -40,8 +40,8 @@ module Prometheus
         register(Summary.new(name, docstring, base_labels))
       end
 
-      def gauge(name, docstring, base_labels = {}, multiprocess_mode=:all)
-        register(Gauge.new(name, docstring, base_labels))
+      def gauge(name, docstring, base_labels = {}, multiprocess_mode = :all)
+        register(Gauge.new(name, docstring, base_labels, multiprocess_mode))
       end
 
       def histogram(name, docstring, base_labels = {},
