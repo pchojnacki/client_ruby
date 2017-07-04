@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   s.files             = %w(README.md) + Dir.glob('{lib/**/*}')
   s.require_paths     = ['lib']
 
-  s.add_dependency 'mmap2', '~> 2.2.6'
+  s.add_dependency 'mmap2', '~> 2.2.7'
 end
