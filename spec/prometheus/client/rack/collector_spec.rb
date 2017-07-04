@@ -3,7 +3,7 @@
 require 'rack/test'
 require 'prometheus/client/rack/collector'
 
-describe Prometheus::Client::Rack::Collector do
+xdescribe Prometheus::Client::Rack::Collector do
   include Rack::Test::Methods
 
   let(:registry) do

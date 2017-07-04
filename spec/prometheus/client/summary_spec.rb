@@ -10,7 +10,7 @@ describe Prometheus::Client::Summary do
     let(:type) { Hash }
   end
 
-  describe '#observe' do
+  xdescribe '#observe' do
     it 'records the given value' do
       expect do
         summary.observe({}, 5)
@@ -18,7 +18,7 @@ describe Prometheus::Client::Summary do
     end
   end
 
-  describe '#get' do
+  xdescribe '#get' do
     before do
       summary.observe({ foo: 'bar' }, 3)
       summary.observe({ foo: 'bar' }, 5.2)
@@ -42,7 +42,7 @@ describe Prometheus::Client::Summary do
     end
   end
 
-  describe '#values' do
+  xdescribe '#values' do
     it 'returns a hash of all recorded summaries' do
       summary.observe({ status: 'bar' }, 3)
       summary.observe({ status: 'foo' }, 5)

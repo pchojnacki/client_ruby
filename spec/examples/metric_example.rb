@@ -3,7 +3,7 @@
 shared_examples_for Prometheus::Client::Metric do
   subject { described_class.new(:foo, 'foo description') }
 
-  describe '.new' do
+  xdescribe '.new' do
     it 'returns a new metric' do
       expect(subject).to be
     end
@@ -29,13 +29,13 @@ shared_examples_for Prometheus::Client::Metric do
     end
   end
 
-  describe '#type' do
+  xdescribe '#type' do
     it 'returns the metric type as symbol' do
       expect(subject.type).to be_a(Symbol)
     end
   end
 
-  describe '#get' do
+  xdescribe '#get' do
     it 'returns the current metric value' do
       expect(subject.get).to be_a(type)
     end

@@ -3,7 +3,7 @@
 require 'rack/test'
 require 'prometheus/client/rack/exporter'
 
-describe Prometheus::Client::Rack::Exporter do
+xdescribe Prometheus::Client::Rack::Exporter do
   include Rack::Test::Methods
 
   let(:registry) do
