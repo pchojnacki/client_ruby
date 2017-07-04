@@ -105,7 +105,7 @@ module Prometheus
             output += "# TYPE #{name} #{metric[:type].to_s}\n"
             metric[:samples].each do |metric_name, labels, value|
               if !labels.empty?
-                labelstr = '{' + labels.sort.map { |k, v| "#{k}='#{v}'" }.join(',') + '}'
+                labelstr = '{' + labels.sort.map { |k, v| "#{k}=\"#{v}\"" }.join(',') + '}'
               else
                 labelstr = ''
               end
