@@ -1,5 +1,7 @@
 .test-job: &test-job
   image: $CI_JOB_NAME
+  variables:
+    prometheus_multiproc_dir: tmp/
   script:
     - rspec # prevent us from pushing to coveralls
 
