@@ -1,13 +1,26 @@
 # encoding: UTF-8
+ENV['prometheus_multiproc_dir'] = 'tmp/'
 
 require 'prometheus/client/counter'
 require 'examples/metric_example'
 
-xdescribe Prometheus::Client::Counter do
+describe Prometheus::Client::Counter do
   let(:counter) { Prometheus::Client::Counter.new(:foo, 'foo description') }
 
   it_behaves_like Prometheus::Client::Metric do
     let(:type) { Fixnum }
+  end
+  
+  describe 'leeaak' do
+    it 'creates many counters' do
+      100.times do |j|
+        99999.times do |i|
+          counter = Prometheus::Client::Counter.new("foo#{j}_z#{i}".to_sym, 'some string')
+          counter.increment
+        end
+        GC.start
+      end
+    end
   end
 
   describe '#increment' do
