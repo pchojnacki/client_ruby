@@ -64,6 +64,7 @@ module Prometheus
         @mutex.synchronize do
           @value += amount
           @file.write_value(@key, @value)
+          @value
         end
       end
 
@@ -71,6 +72,7 @@ module Prometheus
         @mutex.synchronize do
           @value = value
           @file.write_value(@key, @value)
+          @value
         end
       end
 

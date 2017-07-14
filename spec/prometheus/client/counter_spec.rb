@@ -10,11 +10,11 @@ describe Prometheus::Client::Counter do
   it_behaves_like Prometheus::Client::Metric do
     let(:type) { Fixnum }
   end
-  
-  describe 'leeaak' do
-    it 'creates many counters' do
-      100.times do |j|
-        99999.times do |i|
+
+  xdescribe 'Memory Error tests' do
+    it "creating many counters shouldn't cause a SIGBUS" do
+      4.times do |j|
+        9999.times do |i|
           counter = Prometheus::Client::Counter.new("foo#{j}_z#{i}".to_sym, 'some string')
           counter.increment
         end
@@ -24,10 +24,9 @@ describe Prometheus::Client::Counter do
   end
 
   describe '#increment' do
+
     it 'increments the counter' do
-      expect do
-        counter.increment
-      end.to change { counter.get }.by(1)
+      expect { counter.increment }.to change { counter.get }.by(1)
     end
 
     it 'increments the counter for a given label set' do
@@ -51,7 +50,7 @@ describe Prometheus::Client::Counter do
     end
 
     it 'returns the new counter value' do
-      expect(counter.increment).to eql(1)
+      expect(counter.increment).to eql(counter.get)
     end
 
     it 'is thread safe' do
