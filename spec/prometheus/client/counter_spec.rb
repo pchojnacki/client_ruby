@@ -11,7 +11,7 @@ describe Prometheus::Client::Counter do
     let(:type) { Fixnum }
   end
 
-  xdescribe 'Memory Error tests' do
+  describe 'Memory Error tests' do
     it "creating many counters shouldn't cause a SIGBUS" do
       4.times do |j|
         9999.times do |i|
@@ -24,7 +24,6 @@ describe Prometheus::Client::Counter do
   end
 
   describe '#increment' do
-
     it 'increments the counter' do
       expect { counter.increment }.to change { counter.get }.by(1)
     end

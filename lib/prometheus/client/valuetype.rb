@@ -180,6 +180,7 @@ class MmapedDict
     while @used + value.length > @capacity
       @capacity *= 2
       @f.truncate(@capacity)
+      @m.unmap
       @m = Mmap.new(@f.path, 'rw', Mmap::MAP_SHARED)
     end
     @m[@used..@used + value.length] = value
