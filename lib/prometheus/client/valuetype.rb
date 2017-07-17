@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-require "json"
-require "mmap"
+require 'json'
+require 'mmap'
 
 module Prometheus
   module Client
@@ -99,17 +99,15 @@ end
 #
 # TODO(julius): dealing with Mmap.new, truncate etc. errors?
 class MmapedDict
-  @@INITIAL_MMAP_SIZE = 4
-
   attr_reader :m, :capacity, :used, :positions
 
   def initialize(filename)
     @mutex = Mutex.new
     @f = File.open(filename, 'a+b')
-    if @f.size < @@INITIAL_MMAP_SIZE
-      @f.truncate(@@INITIAL_MMAP_SIZE)
+    if @f.size < MmapedDict.initial_mmap_file_size
+      @f.truncate(MmapedDict.initial_mmap_file_size)
     end
-    @f.truncate(@@INITIAL_MMAP_SIZE)
+    @f.truncate(MmapedDict.initial_mmap_file_size)
 
     @capacity = @f.size
     @m = Mmap.new(filename, 'rw', Mmap::MAP_SHARED)
@@ -160,6 +158,10 @@ class MmapedDict
   end
 
   private
+
+  def self.initial_mmap_file_size
+    Prometheus::Client.configuration.initial_mmap_file_size
+  end
 
   # Initialize a value. Lock must be held by caller.
   def init_value(key)
