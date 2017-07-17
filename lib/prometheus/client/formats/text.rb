@@ -39,7 +39,7 @@ module Prometheus
         end
 
         def self.marshal_multiprocess(path = Prometheus::Client.configuration.multiprocess_files_dir)
-          metrics = load_metrics
+          metrics = load_metrics(path)
 
           metrics.each_value do |metric|
             samples = {}
@@ -94,7 +94,7 @@ module Prometheus
         class << self
           private
 
-          def load_metrics
+          def load_metrics(path)
             metrics = {}
             Dir.glob(File.join(path, '*.db')).each do |f|
               parts = File.basename(f, '.db').split('_')

@@ -37,7 +37,7 @@ module Prometheus
         @@pid = Process.pid
         file_prefix = type.to_s
         if type == :gauge
-          file_prefix += '_' +  multiprocess_mode.to_s
+          file_prefix += '_' + multiprocess_mode.to_s
         end
 
         @@files_lock.synchronize do
@@ -99,18 +99,62 @@ end
 #
 # TODO(julius): dealing with Mmap.new, truncate etc. errors?
 class MmapedDict
+  MINIMUM_SIZE = 4.freeze
   attr_reader :m, :capacity, :used, :positions
 
   def initialize(filename)
     @mutex = Mutex.new
     @f = File.open(filename, 'a+b')
-    if @f.size < MmapedDict.initial_mmap_file_size
-      @f.truncate(MmapedDict.initial_mmap_file_size)
+    safe_process_file
+  end
+
+  # Yield (key, value, pos). No locking is performed.
+  def all_values
+    read_all_values.map { |k, v, p| [k, v] }
+  end
+
+  def read_value(key)
+    @mutex.synchronize do
+      init_value(key) unless @positions.has_key?(key)
     end
-    @f.truncate(MmapedDict.initial_mmap_file_size)
+    pos = @positions[key]
+    # We assume that reading from an 8 byte aligned value is atomic.
+    @m[pos..pos+7].unpack('d')[0]
+  end
+
+  def write_value(key, value)
+    @mutex.synchronize do
+      init_value(key) unless @positions.has_key?(key)
+    end
+    pos = @positions[key]
+    # We assume that writing to an 8 byte aligned value is atomic.
+    @m[pos..pos+7] = [value].pack('d')
+  end
+
+  def close()
+    @m.munmap
+    @f.close
+  end
+
+  private
+
+  def safe_process_file
+    process_file
+  rescue => e
+    Prometheus::Client.logger.warn("caught exception #{e} while processing metrics file #{@f.path}, resetting file contents")
+    @m.munmap unless @m.nil?
+    @f.truncate(0)
+    process_file
+  end
+
+  def process_file
+    if @f.size < MINIMUM_SIZE
+      @f.truncate(initial_mmap_file_size)
+    end
+    @f.truncate(initial_mmap_file_size)
 
     @capacity = @f.size
-    @m = Mmap.new(filename, 'rw', Mmap::MAP_SHARED)
+    @m = Mmap.new(@f.path, 'rw', Mmap::MAP_SHARED)
     # @m.mlock # TODO: Why does this raise an error?
 
     @positions = {}
@@ -125,41 +169,7 @@ class MmapedDict
     end
   end
 
-  # Yield (key, value, pos). No locking is performed.
-  def all_values
-    read_all_values.map { |k, v, p| [k, v] }
-  end
-
-  def read_value(key)
-    @mutex.synchronize do
-      if !@positions.has_key?(key)
-        init_value(key)
-      end
-    end
-    pos = @positions[key]
-    # We assume that reading from an 8 byte aligned value is atomic.
-    @m[pos..pos+7].unpack('d')[0]
-  end
-
-  def write_value(key, value)
-    @mutex.synchronize do
-      if !@positions.has_key?(key)
-        init_value(key)
-      end
-    end
-    pos = @positions[key]
-    # We assume that writing to an 8 byte aligned value is atomic.
-    @m[pos..pos+7] = [value].pack('d')
-  end
-
-  def close()
-    @m.munmap
-    @f.close
-  end
-
-  private
-
-  def self.initial_mmap_file_size
+  def initial_mmap_file_size
     Prometheus::Client.configuration.initial_mmap_file_size
   end
 

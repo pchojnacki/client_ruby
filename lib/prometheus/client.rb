@@ -19,6 +19,10 @@ module Prometheus
       def registry
         @registry ||= Registry.new
       end
+
+      def logger
+        configuration.logger
+      end
     end
   end
 end
