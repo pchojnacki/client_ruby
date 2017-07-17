@@ -4,6 +4,10 @@ require 'prometheus/client/histogram'
 require 'examples/metric_example'
 
 describe Prometheus::Client::Histogram do
+  before do
+    allow(Prometheus::Client.configuration).to receive(:multiprocess_files_dir).and_return('tmp/')
+  end
+
   let(:histogram) do
     described_class.new(:bar, 'bar description', {}, [2.5, 5, 10])
   end
@@ -64,9 +68,9 @@ describe Prometheus::Client::Histogram do
       histogram.observe({ status: 'foo' }, 6)
 
       expect(histogram.values).to eql(
-        { status: 'bar' } => { 2.5 => 0, 5 => 1, 10 => 1 },
-        { status: 'foo' } => { 2.5 => 0, 5 => 0, 10 => 1 },
-      )
+                                    { status: 'bar' } => { 2.5 => 0, 5 => 1, 10 => 1 },
+                                    { status: 'foo' } => { 2.5 => 0, 5 => 0, 10 => 1 },
+                                  )
     end
   end
 end

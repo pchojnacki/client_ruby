@@ -1,10 +1,12 @@
 # encoding: UTF-8
-ENV['prometheus_multiproc_dir'] = 'tmp/'
-
 require 'prometheus/client/counter'
 require 'examples/metric_example'
 
 describe Prometheus::Client::Counter do
+  before do
+    allow(Prometheus::Client.configuration).to receive(:multiprocess_files_dir).and_return('tmp/')
+  end
+
   let(:counter) { Prometheus::Client::Counter.new(:foo, 'foo description') }
 
   it_behaves_like Prometheus::Client::Metric do
