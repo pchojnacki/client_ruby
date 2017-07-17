@@ -1,13 +1,24 @@
-# encoding: UTF-8
-
 require 'prometheus/client/registry'
+require 'prometheus/client/configuration'
 
 module Prometheus
   # Client is a ruby implementation for a Prometheus compatible client.
   module Client
-    # Returns a default registry object
-    def self.registry
-      @registry ||= Registry.new
+    class << self
+      attr_writer :configuration
+
+      def configuration
+        @configuration ||= Configuration.new
+      end
+
+      def configure
+        yield(configuration)
+      end
+
+      # Returns a default registry object
+      def registry
+        @registry ||= Registry.new
+      end
     end
   end
 end

@@ -13,12 +13,12 @@ module Prometheus
         attr_accessor :sum, :total
 
         def initialize(type, name, labels, buckets)
-          @sum = ValueClass.new(type, name, "#{name}_sum", labels)
+          @sum = value_class.new(type, name, "#{name}_sum", labels)
           # TODO: get rid of total and use +Inf bucket instead.
-          @total = ValueClass.new(type, name, "#{name}_count", labels)
+          @total = value_class.new(type, name, "#{name}_count", labels)
 
           buckets.each do |bucket|
-            self[bucket] = ValueClass.new(type, name, "#{name}_bucket", labels.merge({:le => bucket.to_s}))
+            self[bucket] = value_class.new(type, name, "#{name}_bucket", labels.merge({:le => bucket.to_s}))
           end
         end
 
@@ -37,6 +37,12 @@ module Prometheus
             hash[bucket] = self[bucket].get()
           end
           hash
+        end
+
+        private
+
+        def value_class
+          Prometheus::Client.configuration.value_class
         end
       end
 

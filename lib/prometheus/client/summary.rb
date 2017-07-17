@@ -14,13 +14,19 @@ module Prometheus
         attr_accessor :sum, :total
 
         def initialize(type, name, labels)
-          @sum = ValueClass.new(type, name, "#{name}_sum", labels)
-          @total = ValueClass.new(type, name, "#{name}_count", labels)
+          @sum = value_class.new(type, name, "#{name}_sum", labels)
+          @total = value_class.new(type, name, "#{name}_count", labels)
         end
 
         def observe(value)
           @sum.increment(value)
           @total.increment()
+        end
+
+        private
+        
+        def value_class
+          Prometheus::Client.configuration.value_class
         end
       end
 
@@ -37,6 +43,7 @@ module Prometheus
         label_set = label_set_for(labels)
         synchronize { @values[label_set].observe(value) }
       end
+
       alias add observe
       deprecate :add, :observe, 2016, 10
 

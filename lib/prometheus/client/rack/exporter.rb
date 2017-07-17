@@ -11,7 +11,7 @@ module Prometheus
       class Exporter
         attr_reader :app, :registry, :path
 
-        FORMATS  = [Formats::Text].freeze
+        FORMATS = [Formats::Text].freeze
         FALLBACK = Formats::Text
 
         def initialize(app, options = {})
@@ -62,8 +62,11 @@ module Prometheus
         end
 
         def respond_with(format)
-          # For now we're only supporting mmapped ValueClass.
-          response = format.marshal_multiprocess
+          response = if Prometheus::Client.configuration.value_class.multiprocess
+                       format.marshal_multiprocess
+                     else
+                       format.marshal
+                     end
           [
             200,
             { 'Content-Type' => format::CONTENT_TYPE },

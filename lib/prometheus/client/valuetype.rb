@@ -42,7 +42,7 @@ module Prometheus
 
         @@files_lock.synchronize do
           if !@@files.has_key?(file_prefix)
-            filename = File.join(Prometheus::Client::Multiprocdir, "#{file_prefix}_#{@@pid}.db")
+            filename = File.join(Prometheus::Client.configuration.multiprocess_files_dir, "#{file_prefix}_#{@@pid}.db")
             @@files[file_prefix] = MmapedDict.new(filename)
           end
         end
@@ -86,19 +86,6 @@ module Prometheus
         true
       end
     end
-
-    # Should we enable multi-process mode?
-    # This needs to be chosen before the first metric is constructed,
-    # and as that may be in some arbitrary library the user/admin has
-    # no control over we use an enviroment variable.
-    if ENV.has_key?('prometheus_multiproc_dir')
-      Multiprocdir = ENV['prometheus_multiproc_dir']
-      ValueClass = MmapedValue
-    else
-      # Only support mmap values for now.
-      Multiprocdir = '/var/run/gitlab/unicorn'
-      ValueClass = MmapedValue
-    end
   end
 end
 
@@ -112,16 +99,18 @@ end
 #
 # TODO(julius): dealing with Mmap.new, truncate etc. errors?
 class MmapedDict
-  @@INITIAL_MMAP_SIZE = 1024*1024
+  @@INITIAL_MMAP_SIZE = 4
 
   attr_reader :m, :capacity, :used, :positions
 
   def initialize(filename)
     @mutex = Mutex.new
     @f = File.open(filename, 'a+b')
-    if @f.size == 0
+    if @f.size < @@INITIAL_MMAP_SIZE
       @f.truncate(@@INITIAL_MMAP_SIZE)
     end
+    @f.truncate(@@INITIAL_MMAP_SIZE)
+
     @capacity = @f.size
     @m = Mmap.new(filename, 'rw', Mmap::MAP_SHARED)
     # @m.mlock # TODO: Why does this raise an error?

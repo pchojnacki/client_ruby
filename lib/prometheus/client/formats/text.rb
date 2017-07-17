@@ -38,32 +38,8 @@ module Prometheus
           (lines << nil).join(DELIMITER)
         end
 
-        def self.marshal_multiprocess(path=Prometheus::Client::Multiprocdir)
-          metrics = {}
-          Dir.glob(File.join(path, "*.db")).each do |f|
-            parts = File.basename(f,'.db').split("_")
-            type = parts[0].to_sym
-            d = MmapedDict.new(f)
-            d.all_values.each do |key, value|
-              metric_name, name, labelnames, labelvalues = JSON.parse(key)
-              metric = metrics.fetch(metric_name, {
-                metric_name: metric_name,
-                help: 'Multiprocess metric',
-                type: type,
-                samples: [],
-              })
-              if type == :gauge
-                pid = parts[2]
-                metric[:multiprocess_mode] = parts[1]
-                metric[:samples] += [[name, labelnames.zip(labelvalues) + [['pid', pid]], value]]
-              else
-                # The duplicates and labels are fixed in the next for.
-                metric[:samples] += [[name, labelnames.zip(labelvalues), value]]
-              end
-              metrics[metric_name] = metric
-            end
-            d.close
-          end
+        def self.marshal_multiprocess(path = Prometheus::Client.configuration.multiprocess_files_dir)
+          metrics = load_metrics
 
           metrics.each_value do |metric|
             samples = {}
@@ -117,6 +93,39 @@ module Prometheus
 
         class << self
           private
+
+          def load_metrics
+            metrics = {}
+            Dir.glob(File.join(path, '*.db')).each do |f|
+              parts = File.basename(f, '.db').split('_')
+              type = parts[0].to_sym
+              d = MmapedDict.new(f)
+
+              begin
+                d.all_values.each do |key, value|
+                  metric_name, name, labelnames, labelvalues = JSON.parse(key)
+                  metric = metrics.fetch(metric_name,
+                                         metric_name: metric_name,
+                                         help: 'Multiprocess metric',
+                                         type: type,
+                                         samples: []
+                  )
+                  if type == :gauge
+                    pid = parts[2]
+                    metric[:multiprocess_mode] = parts[1]
+                    metric[:samples] += [[name, labelnames.zip(labelvalues) + [['pid', pid]], value]]
+                  else
+                    # The duplicates and labels are fixed in the next for.
+                    metric[:samples] += [[name, labelnames.zip(labelvalues), value]]
+                  end
+                  metrics[metric_name] = metric
+                end
+              ensure
+                d.close
+              end
+            end
+            metrics
+          end
 
           def representation(metric, label_set, value, &block)
             set = metric.base_labels.merge(label_set)

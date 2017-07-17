@@ -47,10 +47,16 @@ module Prometheus
         end
       end
 
+      protected
+
+      def value_class
+        Prometheus::Client.configuration.value_class
+      end
+
       private
 
       def default(labels)
-        ValueClass.new(type, @name, @name, labels)
+        value_class.new(type, @name, @name, labels)
       end
 
       def validate_name(name)

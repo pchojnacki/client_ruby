@@ -4,6 +4,8 @@ require 'prometheus/client/formats/text'
 require 'prometheus/client/valuetype'
 
 describe Prometheus::Client::Formats::Text do
+  let(:value_class) { Prometheus::Client::MmapedValue }
+
   let(:summary_value) do
     { 0.5 => 4.2, 0.9 => 8.32, 0.99 => 15.3 }.tap do |value|
       allow(value).to receive_messages(sum: 1243.21, total: 93)
@@ -68,7 +70,7 @@ describe Prometheus::Client::Formats::Text do
     ]
     metrics.each do |m|
       m.values.each do |k, v|
-        m.values[k] = Prometheus::Client::ValueClass.new(m.type, m.name, m.name, k, v)
+        m.values[k] = value_class.new(m.type, m.name, m.name, k, v)
       end
     end
     double(metrics: metrics)
