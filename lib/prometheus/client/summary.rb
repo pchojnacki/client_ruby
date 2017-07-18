@@ -1,6 +1,5 @@
-# encoding: UTF-8
-
 require 'prometheus/client/metric'
+require 'prometheus/client/uses_value_type'
 
 module Prometheus
   module Client
@@ -11,22 +10,17 @@ module Prometheus
 
       # Value represents the state of a Summary at a given point.
       class Value < Hash
+        include UsesValueType
         attr_accessor :sum, :total
 
         def initialize(type, name, labels)
-          @sum = value_class.new(type, name, "#{name}_sum", labels)
-          @total = value_class.new(type, name, "#{name}_count", labels)
+          @sum = value_object(type, name, "#{name}_sum", labels)
+          @total = value_object(type, name, "#{name}_count", labels)
         end
 
         def observe(value)
           @sum.increment(value)
-          @total.increment()
-        end
-
-        private
-        
-        def value_class
-          Prometheus::Client.configuration.value_class
+          @total.increment
         end
       end
 

@@ -1,25 +1,24 @@
-# encoding: UTF-8
-
 require 'thread'
 require 'prometheus/client/label_set_validator'
-require 'prometheus/client/valuetype'
+require 'prometheus/client/uses_value_type'
 
 module Prometheus
   module Client
     # Metric
     class Metric
+      include UsesValueType
       attr_reader :name, :docstring, :base_labels
 
       def initialize(name, docstring, base_labels = {})
         @mutex = Mutex.new
-        case type
-        when :summary
-          @validator = LabelSetValidator.new(['quantile'])
-        when :histogram
-          @validator = LabelSetValidator.new(['le'])
-        else
-          @validator = LabelSetValidator.new
-        end
+        @validator = case type
+                       when :summary
+                         LabelSetValidator.new(['quantile'])
+                       when :histogram
+                         LabelSetValidator.new(['le'])
+                       else
+                         LabelSetValidator.new
+                     end
         @values = Hash.new { |hash, key| hash[key] = default(key) }
 
         validate_name(name)
@@ -47,16 +46,10 @@ module Prometheus
         end
       end
 
-      protected
-
-      def value_class
-        Prometheus::Client.configuration.value_class
-      end
-
       private
 
       def default(labels)
-        value_class.new(type, @name, @name, labels)
+        value_object(type, @name, @name, labels)
       end
 
       def validate_name(name)

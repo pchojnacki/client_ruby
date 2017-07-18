@@ -1,6 +1,4 @@
-# encoding: UTF-8
-
-require 'prometheus/client/valuetype'
+require 'prometheus/client/uses_value_type'
 
 module Prometheus
   module Client

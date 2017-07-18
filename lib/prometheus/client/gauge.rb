@@ -20,7 +20,7 @@ module Prometheus
       end
 
       def default(labels)
-        value_class.new(type, @name, @name, labels, @multiprocess_mode)
+        value_object(type, @name, @name, labels, @multiprocess_mode)
       end
 
       # Sets the value for the given label set

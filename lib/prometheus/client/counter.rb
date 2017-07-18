@@ -1,7 +1,6 @@
 # encoding: UTF-8
 
 require 'prometheus/client/metric'
-require 'prometheus/client/valuetype'
 
 module Prometheus
   module Client
@@ -21,7 +20,7 @@ module Prometheus
       private
 
       def default(labels)
-        value_class.new(type, @name, @name, labels)
+        value_object(type, @name, @name, labels)
       end
     end
   end

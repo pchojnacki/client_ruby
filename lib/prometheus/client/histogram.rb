@@ -1,6 +1,5 @@
-# encoding: UTF-8
-
 require 'prometheus/client/metric'
+require 'prometheus/client/uses_value_type'
 
 module Prometheus
   module Client
@@ -10,15 +9,16 @@ module Prometheus
     class Histogram < Metric
       # Value represents the state of a Histogram at a given point.
       class Value < Hash
+        include UsesValueType
         attr_accessor :sum, :total
 
         def initialize(type, name, labels, buckets)
-          @sum = value_class.new(type, name, "#{name}_sum", labels)
+          @sum = value_object(type, name, "#{name}_sum", labels)
           # TODO: get rid of total and use +Inf bucket instead.
-          @total = value_class.new(type, name, "#{name}_count", labels)
+          @total = value_object(type, name, "#{name}_count", labels)
 
           buckets.each do |bucket|
-            self[bucket] = value_class.new(type, name, "#{name}_bucket", labels.merge({:le => bucket.to_s}))
+            self[bucket] = value_object(type, name, "#{name}_bucket", labels.merge({ :le => bucket.to_s }))
           end
         end
 
@@ -37,12 +37,6 @@ module Prometheus
             hash[bucket] = self[bucket].get()
           end
           hash
-        end
-
-        private
-
-        def value_class
-          Prometheus::Client.configuration.value_class
         end
       end
 

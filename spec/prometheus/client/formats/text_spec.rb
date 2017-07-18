@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 require 'prometheus/client/formats/text'
-require 'prometheus/client/valuetype'
+require 'prometheus/client/mmaped_value'
 
 describe Prometheus::Client::Formats::Text do
   let(:value_class) { Prometheus::Client::MmapedValue }

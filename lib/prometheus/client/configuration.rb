@@ -1,5 +1,5 @@
 require 'prometheus/client/registry'
-require 'prometheus/client/valuetype'
+require 'prometheus/client/mmaped_value'
 require 'logger'
 
 module Prometheus
@@ -10,7 +10,7 @@ module Prometheus
       def initialize
         @value_class = ::Prometheus::Client::MmapedValue
         @multiprocess_files_dir = ENV['prometheus_multiproc_dir']
-        @initial_mmap_file_size = 64 * 1024
+        @initial_mmap_file_size = 4 * 1024
         @logger = Logger.new($stdout)
       end
     end
