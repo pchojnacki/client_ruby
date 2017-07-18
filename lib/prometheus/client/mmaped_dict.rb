@@ -1,5 +1,7 @@
 module Prometheus
   module Client
+    class ParsingError < StandardError; end
+
     # A dict of doubles, backed by an mmapped file.
     #
     # The file starts with a 4 byte int, indicating how much of it is used.
@@ -16,7 +18,7 @@ module Prometheus
       def initialize(filename)
         @mutex = Mutex.new
         @f = File.open(filename, 'a+b')
-        safe_process_file
+        process_file_wrappe_error
       end
 
       # Yield (key, value, pos). No locking is performed.
@@ -49,13 +51,10 @@ module Prometheus
 
       private
 
-      def safe_process_file
+      def process_file_wrappe_error
         process_file
-      rescue => e
-        Prometheus::Client.logger.warn("caught exception #{e} while processing metrics file #{@f.path}, resetting file contents")
-        @m.munmap unless @m.nil?
-        @f.truncate(0)
-        process_file
+      rescue StandardError => e
+        raise ParsingError.new("exception #{e} while processing metrics file #{@f.path}")
       end
 
       def process_file
