@@ -72,7 +72,7 @@ module Prometheus
       def read_value(key)
         @file.read_value(key)
       rescue StandardError => e
-        Prometheus::Client.logger.warn("readomg value from #{@file.path} failed with #{e}")
+        Prometheus::Client.logger.warn("reading value from #{@file.path} failed with #{e}")
       end
     end
   end

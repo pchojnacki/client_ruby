@@ -1,3 +1,5 @@
+require 'prometheus/client'
+
 module Prometheus
   module Client
     class ParsingError < StandardError; end
@@ -18,7 +20,9 @@ module Prometheus
       def initialize(filename)
         @mutex = Mutex.new
         @f = File.open(filename, 'a+b')
-        process_file_wrappe_error
+        process_file
+      rescue StandardError => e
+        raise ParsingError.new("exception #{e} while processing metrics file #{@f.path}")
       end
 
       # Yield (key, value, pos). No locking is performed.
@@ -49,19 +53,16 @@ module Prometheus
         @f.close
       end
 
-      private
-
-      def process_file_wrappe_error
-        process_file
-      rescue StandardError => e
-        raise ParsingError.new("exception #{e} while processing metrics file #{@f.path}")
+      def initial_mmap_file_size
+        Prometheus::Client.configuration.initial_mmap_file_size
       end
+
+      private
 
       def process_file
         if @f.size < MINIMUM_SIZE
           @f.truncate(initial_mmap_file_size)
         end
-        @f.truncate(initial_mmap_file_size)
 
         @capacity = @f.size
         @m = Mmap.new(@f.path, 'rw', Mmap::MAP_SHARED)
@@ -77,10 +78,6 @@ module Prometheus
             @positions[key] = pos
           end
         end
-      end
-
-      def initial_mmap_file_size
-        Prometheus::Client.configuration.initial_mmap_file_size
       end
 
       # Initialize a value. Lock must be held by caller.
